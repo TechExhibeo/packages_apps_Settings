@@ -21,8 +21,11 @@
     <!-- Kernel Tweaker -->
     <string name="performance_settings">Performance</string>
 
-+    <!-- Tesla Extra Info -->
-+    <string name="teslaextrainfo">Extra information</string>
-+    <string name="teslaextrainfo_summary">Display extra info for cpu, display, etc</string>
-+
+    <!-- Tesla Extra Info -->
+    <string name="teslaextrainfo">Extra information</string>
+    <string name="teslaextrainfo_summary">Display extra info for cpu, display, etc</string>
+
+   <!-- Restart SystemUI -->
+    <string name="restart_systemui">Restart SystemUI</string>
+
 </resources>
