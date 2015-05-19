@@ -2041,6 +2041,17 @@
                 android:value="true" />
         </activity>
 
+	<!-- Start Tesla Settings -->
+
+        <!-- Tesla Extra info -->
+        <activity android:name="com.android.settings.tesla.extrainfo.MainActivity"
+                  android:theme="@android:style/Theme.Holo.Dialog.NoActionBar.MinWidth">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+
         <activity android:name=".cyanogenmod.PrivacySettings" />
         <activity android:name=".notificationlight.NotificationLightSettings" />
         <activity android:name=".notificationlight.BatteryLightSettings" />

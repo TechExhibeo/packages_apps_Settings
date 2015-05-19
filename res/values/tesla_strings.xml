@@ -18,5 +18,11 @@
     <!-- SuperSU -->
     <string name="supersu_title">SuperSU</string>
 
+    <!-- Kernel Tweaker -->
     <string name="performance_settings">Performance</string>
+
++    <!-- Tesla Extra Info -->
++    <string name="teslaextrainfo">Extra information</string>
++    <string name="teslaextrainfo_summary">Display extra info for cpu, display, etc</string>
++
 </resources>
