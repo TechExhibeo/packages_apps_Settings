@@ -27,5 +27,9 @@
 
    <!-- Restart SystemUI -->
     <string name="restart_systemui">Restart SystemUI</string>
+	
+    <!-- Changelog -->
+    <string name="changelog_tesla_title">Changelog</string>
+    <string name="changelog_tesla_error">Unable to load changelog</string>
 
 </resources>
