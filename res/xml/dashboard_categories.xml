@@ -82,7 +82,7 @@
                 android:fragment="com.android.settings.slim.InterfaceSettings"
                 android:title="@string/interface_settings_title"
                 />
-
+      
       <!-- BitSyko Layers App -->
       <dashboard-tile
                 android:id="@+id/bitsyko_layers"
