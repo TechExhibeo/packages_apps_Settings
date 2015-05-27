@@ -48,6 +48,9 @@
     <!-- Volume rocker music seek options -->
     <string name="volbtn_music_controls_title">Volume rocker music controls</string>
     <string name="volbtn_music_controls_summary">When screen off, long-pressing the volume rockers will seek music tracks</string>
+    
+    <!-- Animation Section -->
+    <string name="screen_and_animations_title">Animation control</string>
 
     <!-- Toast animations -->
     <string name="toast_animation_title">Toast animations</string>
