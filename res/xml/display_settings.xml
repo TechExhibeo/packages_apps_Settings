@@ -69,10 +69,6 @@
                 android:title="@string/lift_to_wake_title"
                 android:persistent="false" />
 
-        <SwitchPreference
-               android:key="double_tap_wake_gesture"
-               android:title="@string/double_tap_to_wake_title" />
-
         <com.android.settings.FontDialogPreference
                 android:key="font_size"
                 android:title="@string/title_font_size"
