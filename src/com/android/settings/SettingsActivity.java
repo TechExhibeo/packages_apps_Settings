@@ -81,6 +81,7 @@ import com.android.settings.deviceinfo.Memory;
 import com.android.settings.deviceinfo.UsbSettings;
 import com.android.settings.fuelgauge.BatterySaverSettings;
 import com.android.settings.fuelgauge.PowerUsageSummary;
+import com.android.settings.livedisplay.LiveDisplay;
 import com.android.settings.notification.NotificationAppList;
 import com.android.settings.notification.OtherSoundSettings;
 import com.android.settings.quicklaunch.QuickLaunchSettings;
@@ -304,7 +305,8 @@ public class SettingsActivity extends Activity
             AppNotificationSettings.class.getName(),
             OtherSoundSettings.class.getName(),
             QuickLaunchSettings.class.getName(),
-            ApnSettings.class.getName()
+            ApnSettings.class.getName(),
+            LiveDisplay.class.getName()
     };
 
 
@@ -1217,6 +1219,15 @@ public class SettingsActivity extends Activity
                 } else if (id == R.id.development_settings) {
                     if (!showDev || um.hasUserRestriction(
                             UserManager.DISALLOW_DEBUGGING_FEATURES)) {
+                        removeTile = true;
+                    }
+                } else if (id == R.id.screen_off_gesture_settings) {
+                    boolean supported = false;
+                    try {
+                        supported = (getPackageManager().getPackageInfo("com.slim.device", 0).versionCode > 0);
+                    } catch (PackageManager.NameNotFoundException e) {
+                    }
+                    if (!supported) {
                         removeTile = true;
                     }
 

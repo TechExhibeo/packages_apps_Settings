@@ -30,6 +30,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.media.AudioManager;
+import android.media.AudioSystem;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -43,6 +44,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceCategory;
 import android.preference.SeekBarVolumizer;
+import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -70,14 +72,17 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
     private static final String KEY_ALARM_VOLUME = "alarm_volume";
     private static final String KEY_RING_VOLUME = "ring_volume";
     private static final String KEY_NOTIFICATION_VOLUME = "notification_volume";
+    private static final String KEY_VOLUME_LINK_NOTIFICATION = "volume_link_notification";
     private static final String KEY_PHONE_RINGTONE = "ringtone";
     private static final String KEY_NOTIFICATION_RINGTONE = "notification_ringtone";
+    private static final String KEY_ALARM_RINGTONE = "alarm_ringtone";
     private static final String KEY_VIBRATE_WHEN_RINGING = "vibrate_when_ringing";
     private static final String KEY_NOTIFICATION = "notification";
     private static final String KEY_LOCK_SCREEN_NOTIFICATIONS = "lock_screen_notifications";
     private static final String KEY_NOTIFICATION_ACCESS = "manage_notification_access";
     private static final String PREF_HEADS_UP_SNOOZE_TIME = "heads_up_snooze_time";
     private static final String PREF_HEADS_UP_TIME_OUT = "heads_up_time_out";
+    private static final String KEY_INCREASING_RING_VOLUME = "increasing_ring_volume";
 
     // Notification and Battery Light
     private static final String KEY_NOTIFICATION_LIGHT = "notification_light";
@@ -86,6 +91,14 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
     private static final int SAMPLE_CUTOFF = 2000;  // manually cap sample playback at 2 seconds
 
     private final VolumePreferenceCallback mVolumeCallback = new VolumePreferenceCallback();
+    private final IncreasingRingVolumePreference.Callback mIncreasingRingVolumeCallback =
+            new IncreasingRingVolumePreference.Callback() {
+        @Override
+        public void onStartingSample() {
+            mVolumeCallback.stopSample();
+        }
+    };
+
     private final H mHandler = new H();
     private final SettingsObserver mSettingsObserver = new SettingsObserver();
     private final Receiver mReceiver = new Receiver();
@@ -96,8 +109,11 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
     private boolean mVoiceCapable;
     private Vibrator mVibrator;
     private AudioManager mAudioManager;
-    private VolumeSeekBarPreference mRingOrNotificationPreference;
+    private VolumeSeekBarPreference mRingPreference;
+    private VolumeSeekBarPreference mNotificationPreference;
 
+    private TwoStatePreference mIncreasingRing;
+    private IncreasingRingVolumePreference mIncreasingRingVolume;
     private Preference mPhoneRingtonePreference;
     private Preference mNotificationRingtonePreference;
     private TwoStatePreference mVibrateWhenRinging;
@@ -107,6 +123,9 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
     private int mLockscreenSelectedValue;
     private ComponentName mSuppressor;
     private int mRingerMode = -1;
+    private Preference mAlarmRingtonePreference;
+    private SwitchPreference mVolumeLinkNotification;
+    private PreferenceCategory mSoundCategory;
 
     private ListPreference mHeadsUpSnoozeTime;
     private ListPreference mHeadsUpTimeOut;
@@ -116,6 +135,7 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         super.onCreate(savedInstanceState);
         mContext = getActivity();
         mPM = mContext.getPackageManager();
+        mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
         mVoiceCapable = Utils.isVoiceCapable(mContext);
         mSecure = new LockPatternUtils(getActivity()).isSecure();
 
@@ -127,24 +147,28 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
 
         addPreferencesFromResource(R.xml.notification_settings);
 
-        final PreferenceCategory sound = (PreferenceCategory) findPreference(KEY_SOUND);
+        mSoundCategory = (PreferenceCategory) findPreference(KEY_SOUND);
+
         initVolumePreference(KEY_MEDIA_VOLUME, AudioManager.STREAM_MUSIC,
                 com.android.internal.R.drawable.ic_audio_vol_mute);
         initVolumePreference(KEY_ALARM_VOLUME, AudioManager.STREAM_ALARM,
                 com.android.internal.R.drawable.ic_audio_alarm_mute);
+        mNotificationPreference =
+                initVolumePreference(KEY_NOTIFICATION_VOLUME, AudioManager.STREAM_NOTIFICATION,
+                        com.android.internal.R.drawable.ic_audio_ring_notif_mute);
+
         if (mVoiceCapable) {
-            mRingOrNotificationPreference =
+            mVolumeLinkNotification = (SwitchPreference) mSoundCategory.findPreference(KEY_VOLUME_LINK_NOTIFICATION);
+            mRingPreference =
                     initVolumePreference(KEY_RING_VOLUME, AudioManager.STREAM_RING,
                             com.android.internal.R.drawable.ic_audio_ring_notif_mute);
-            sound.removePreference(sound.findPreference(KEY_NOTIFICATION_VOLUME));
         } else {
-            mRingOrNotificationPreference =
-                    initVolumePreference(KEY_NOTIFICATION_VOLUME, AudioManager.STREAM_NOTIFICATION,
-                            com.android.internal.R.drawable.ic_audio_ring_notif_mute);
-            sound.removePreference(sound.findPreference(KEY_RING_VOLUME));
+            mSoundCategory.removePreference(mSoundCategory.findPreference(KEY_RING_VOLUME));
+            mSoundCategory.removePreference(mSoundCategory.findPreference(KEY_VOLUME_LINK_NOTIFICATION));
         }
-        initRingtones(sound);
-        initVibrateWhenRinging(sound);
+        initRingtones(mSoundCategory);
+        initVibrateWhenRinging(mSoundCategory);
+        initIncreasingRing(mSoundCategory);
 
         final PreferenceCategory notification = (PreferenceCategory)
                 findPreference(KEY_NOTIFICATION);
@@ -207,9 +231,11 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         super.onResume();
         refreshNotificationListeners();
         lookupRingtoneNames();
+        initVolumeLinkNotification();
         mSettingsObserver.register(true);
         mReceiver.register(true);
-        updateRingOrNotificationPreference();
+        updateRingPreference();
+        updateNotificationPreference();
         updateEffectsSuppressor();
         for (VolumeSeekBarPreference volumePref : mVolumePrefs) {
             volumePref.onActivityResume();
@@ -253,32 +279,64 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         return volumePref;
     }
 
-    private void updateRingOrNotificationPreference() {
-        mRingOrNotificationPreference.showIcon(mSuppressor != null
-                ? com.android.internal.R.drawable.ic_audio_ring_notif_mute
-                : mRingerMode == AudioManager.RINGER_MODE_VIBRATE
-                ? com.android.internal.R.drawable.ic_audio_ring_notif_vibrate
-                : com.android.internal.R.drawable.ic_audio_ring_notif);
+    private void updateRingPreference() {
+        if (mRingPreference != null) {
+            final boolean linkEnabled = Settings.Secure.getInt(getContentResolver(),
+                    Settings.Secure.VOLUME_LINK_NOTIFICATION, 1) == 1;
+            if (linkEnabled) {
+                mRingPreference.showIcon(mSuppressor != null || mRingerMode == AudioManager.RINGER_MODE_SILENT
+                        ? com.android.internal.R.drawable.ic_audio_ring_notif_mute
+                        : mRingerMode == AudioManager.RINGER_MODE_VIBRATE
+                        ? com.android.internal.R.drawable.ic_audio_ring_notif_vibrate
+                        : com.android.internal.R.drawable.ic_audio_ring_notif);
+                mRingPreference.setTitle(R.string.ring_notification_volume_option_tile);
+            } else {
+                mRingPreference.showIcon(mSuppressor != null || mRingerMode == AudioManager.RINGER_MODE_SILENT
+                        ? R.drawable.ring_ring_mute
+                        : mRingerMode == AudioManager.RINGER_MODE_VIBRATE
+                        ? com.android.internal.R.drawable.ic_audio_ring_notif_vibrate
+                        :R.drawable.ring_ring);
+                mRingPreference.setTitle(R.string.ring_volume_option_title);
+            }
+        }
+    }
+
+    private void updateNotificationPreference() {
+        if (mNotificationPreference != null) {
+            mNotificationPreference.showIcon(mSuppressor != null || mRingerMode == AudioManager.RINGER_MODE_SILENT
+                    ? com.android.internal.R.drawable.ic_audio_ring_notif_mute
+                    : mRingerMode == AudioManager.RINGER_MODE_VIBRATE
+                    ? com.android.internal.R.drawable.ic_audio_ring_notif_vibrate
+                    : com.android.internal.R.drawable.ic_audio_ring_notif);
+        }
     }
 
     private void updateRingerMode() {
         final int ringerMode = mAudioManager.getRingerModeInternal();
         if (mRingerMode == ringerMode) return;
         mRingerMode = ringerMode;
-        updateRingOrNotificationPreference();
+        updateRingPreference();
+        updateNotificationPreference();
     }
 
     private void updateEffectsSuppressor() {
         final ComponentName suppressor = NotificationManager.from(mContext).getEffectsSuppressor();
         if (Objects.equals(suppressor, mSuppressor)) return;
         mSuppressor = suppressor;
-        if (mRingOrNotificationPreference != null) {
+        if (mRingPreference != null) {
             final String text = suppressor != null ?
                     mContext.getString(com.android.internal.R.string.muted_by,
                             getSuppressorCaption(suppressor)) : null;
-            mRingOrNotificationPreference.setSuppressionText(text);
+            mRingPreference.setSuppressionText(text);
         }
-        updateRingOrNotificationPreference();
+        updateRingPreference();
+        if (mNotificationPreference != null) {
+            final String text = suppressor != null ?
+                    mContext.getString(com.android.internal.R.string.muted_by,
+                            getSuppressorCaption(suppressor)) : null;
+            mNotificationPreference.setSuppressionText(text);
+        }
+        updateNotificationPreference();
     }
 
     private String getSuppressorCaption(ComponentName suppressor) {
@@ -307,6 +365,9 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         public void onSampleStarting(SeekBarVolumizer sbv) {
             if (mCurrent != null && mCurrent != sbv) {
                 mCurrent.stopSample();
+            }
+            if (mIncreasingRingVolume != null) {
+                mIncreasingRingVolume.stopSample();
             }
             mCurrent = sbv;
             if (mCurrent != null) {
@@ -337,6 +398,7 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
             mPhoneRingtonePreference = null;
         }
         mNotificationRingtonePreference = root.findPreference(KEY_NOTIFICATION_RINGTONE);
+        mAlarmRingtonePreference = root.findPreference(KEY_ALARM_RINGTONE);
     }
 
     private void lookupRingtoneNames() {
@@ -358,6 +420,13 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
                         mContext, RingtoneManager.TYPE_NOTIFICATION);
                 if (summary != null) {
                     mHandler.obtainMessage(H.UPDATE_NOTIFICATION_RINGTONE, summary).sendToTarget();
+                }
+            }
+            if (mAlarmRingtonePreference != null) {
+                final CharSequence summary = updateRingtoneName(
+                        mContext, RingtoneManager.TYPE_ALARM);
+                if (summary != null) {
+                    mHandler.obtainMessage(H.UPDATE_ALARM_RINGTONE, summary).sendToTarget();
                 }
             }
         }
@@ -400,6 +469,28 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
             }
         }
         return summary;
+    }
+
+    // === Increasing ringtone ===
+
+    private void initIncreasingRing(PreferenceCategory root) {
+        mIncreasingRing = (TwoStatePreference)
+                root.findPreference(Settings.System.INCREASING_RING);
+        mIncreasingRingVolume = (IncreasingRingVolumePreference)
+                root.findPreference(KEY_INCREASING_RING_VOLUME);
+
+        if (mIncreasingRing == null || mIncreasingRingVolume == null || !mVoiceCapable) {
+            if (mIncreasingRing != null) {
+                root.removePreference(mIncreasingRing);
+                mIncreasingRing = null;
+            }
+            if (mIncreasingRingVolume != null) {
+                root.removePreference(mIncreasingRingVolume);
+                mIncreasingRingVolume = null;
+            }
+        } else {
+            mIncreasingRingVolume.setCallback(mIncreasingRingVolumeCallback);
+        }
     }
 
     // === Vibrate when ringing ===
@@ -496,6 +587,53 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         mLockscreen.setSelectedValue(mLockscreenSelectedValue);
     }
 
+    private void initVolumeLinkNotification() {
+        if (mVoiceCapable) {
+            final boolean linkEnabled = Settings.Secure.getInt(getContentResolver(),
+                    Settings.Secure.VOLUME_LINK_NOTIFICATION, 1) == 1;
+
+            updateRingPreference();
+            if (!linkEnabled) {
+                mSoundCategory.addPreference(mNotificationPreference);
+            } else {
+                mSoundCategory.removePreference(mNotificationPreference);
+            }
+            mVolumeLinkNotification.setChecked(linkEnabled);
+            mVolumeLinkNotification.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    final boolean val = (Boolean)newValue;
+                    if (val) {
+                        // set to same volume as ringer by default if link is enabled
+                        // otherwise notification volume will only change after next
+                        // change of ringer volume
+                        final int ringerVolume = mAudioManager.getStreamVolume(AudioSystem.STREAM_RING);
+                        mAudioManager.setStreamVolume(AudioSystem.STREAM_NOTIFICATION, ringerVolume, 0);  
+                    }
+                    Settings.Secure.putInt(getContentResolver(),
+                            Settings.Secure.VOLUME_LINK_NOTIFICATION, val ? 1 : 0);
+                    updateSlidersAndMutedStates();
+                    return true;
+                }
+            });
+        }
+    }
+
+    private void updateSlidersAndMutedStates() {
+        final boolean muted = mRingerMode == AudioManager.RINGER_MODE_SILENT;
+        final boolean vibrate = mRingerMode == AudioManager.RINGER_MODE_VIBRATE;
+        final boolean linkEnabled = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.VOLUME_LINK_NOTIFICATION, 1) == 1;
+        updateRingPreference();
+        if (!linkEnabled) {
+            updateNotificationPreference();
+            mNotificationPreference.onActivityResume();
+            mSoundCategory.addPreference(mNotificationPreference);
+        } else {
+            mSoundCategory.removePreference(mNotificationPreference);
+        }
+    }
+
     private boolean getLockscreenNotificationsEnabled() {
         return Settings.Secure.getInt(getContentResolver(),
                 Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, 0) != 0;
@@ -570,6 +708,7 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         private static final int STOP_SAMPLE = 3;
         private static final int UPDATE_EFFECTS_SUPPRESSOR = 4;
         private static final int UPDATE_RINGER_MODE = 5;
+        private static final int UPDATE_ALARM_RINGTONE = 6;
 
         private H() {
             super(Looper.getMainLooper());
@@ -593,6 +732,10 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
                 case UPDATE_RINGER_MODE:
                     updateRingerMode();
                     break;
+                case UPDATE_ALARM_RINGTONE:
+                    mAlarmRingtonePreference.setSummary((CharSequence) msg.obj);
+                    break;
+
             }
         }
     }
@@ -638,12 +781,11 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
 
         public List<String> getNonIndexableKeys(Context context) {
             final ArrayList<String> rt = new ArrayList<String>();
-            if (Utils.isVoiceCapable(context)) {
-                rt.add(KEY_NOTIFICATION_VOLUME);
-            } else {
+            if (!Utils.isVoiceCapable(context)) {
                 rt.add(KEY_RING_VOLUME);
                 rt.add(KEY_PHONE_RINGTONE);
                 rt.add(KEY_VIBRATE_WHEN_RINGING);
+                rt.add(KEY_VOLUME_LINK_NOTIFICATION);
             }
             return rt;
         }

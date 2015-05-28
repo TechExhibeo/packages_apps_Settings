@@ -640,7 +640,7 @@
     <string name="bluetooth_accept_all_files">Accept all file types</string>
 
     <!-- Device specific settings -->
-    <string name="screen_off_gesture_settings_title">Screen off gestures</string>
+    <string name="screen_off_gesture_settings_title">Gestures</string>
 
     <!-- Display & Lights screen, setting options for LCD density -->
     <string name="lcd_density">LCD density</string>
@@ -706,7 +706,7 @@
     <string name="navigation_settings_options_title">Navigation options</string>
 
     <!-- Hardware keys -->
-    <string name="button_keys_title">Hardware Buttons</string>
+    <string name="hardwarekeys_pref_title">Hardware buttons</string>
     <string name="keys_bindings_title">Key actions</string>
     <string name="keys_enable_custom_title">Enable custom actions</string>
     <string name="keys_enable_custom_summary">Enable custom hardware key actions</string>
@@ -893,5 +893,153 @@
     <!-- Zen mode related -->
     <string name="interruptions_ignore_while_media_title">Prevent audio ducking</string>
     <string name="interruptions_ignore_while_media_summary">Do not reduce media playback volume when a notification arrives</string>
- 
+
+    <!--- Advanced Settings -->
+    <string name="advanced_settings">Advanced settings</string>
+    <string name="advanced_settings_summary">Enable more settings options</string>
+
+    <!-- Backlight brightness settings screen -->
+    <string name="adaptive_backlight_title">Adaptive backlight</string>
+    <string name="adaptive_backlight_summary">Dynamically adjust the brightness of the display\'s backlight to maximize battery life while maintaining usability</string>
+
+    <!-- Sunlight readability enhancement screen -->
+    <string name="sunlight_enhancement_title">Sunlight enhancement</string>
+    <string name="sunlight_enhancement_summary">Enhance display brightness and readability under bright sunlight</string>
+
+    <!-- Color enhancement settings screen -->
+    <string name="color_enhancement_title">Color enhancement</string>
+    <string name="color_enhancement_summary">Dynamically enhance the color of the display</string>
+
+    <!-- Hardware tunables - Vibrator intensity -->
+    <string name="vibrator_intensity_title">Vibrator intensity</string>
+    <string name="vibrator_warning">Values higher than %1$d are not recommended</string>
+
+    <!-- Hardware tunables - Color calibration -->
+    <string name="color_calibration_title">Color calibration</string>
+    <string name="color_calibration_summary">Calibrate on-screen colors</string>
+    <string name="color_red_title">Red</string>
+    <string name="color_green_title">Green</string>
+    <string name="color_blue_title">Blue</string>
+
+    <!-- Hardware tunables - Gamma calibration -->
+    <string name="gamma_tuning_title_head">Gamma calibration</string>
+    <string name="gamma_tuning_summary_head">Tweak gamma values</string>
+    <string name="gamma_tuning_control_set_header">Group <xliff:g id="index">%d</xliff:g></string> <!-- used if no name provided by overlay -->
+    <string name="gamma_tuning_contrast">Contrast</string>
+    <string name="gamma_tuning_brightness">Brightness</string>
+    <string name="gamma_tuning_saturation">Saturation</string>
+
+    <!-- Launch music player when headset is connected -->
+    <string name="headset_connect_player_title">Launch music app</string>
+    <string name="headset_connect_player_summary">Launch the default music app when headset is connected</string>
+
+    <string name="auto_brightness_reset_button">Reset</string>
+
+    <!-- Display settings.  Screen color. -->
+    <string name="screencolor">Screen color</string>
+    <string name="screencolor_summary">Tune screen Hue, Saturation, Contrast and Intensity</string>
+    <string name="custom_screencolor">Custom screen color</string>
+    <string name="screencolor_save">Save</string>
+    <string name="screencolor_cancel">Cancel</string>
+    <string name="previous_str">Previous</string>
+    <string name="new_str">New</string>
+    <string name="restore_preview">View default picture</string>
+    <string name="selectnewfile_menu">View new picture from Gallery</string>
+    <string name="selectfile_menu">View picture from Gallery</string>
+    <string name="restore_default_str">Reset</string>
+    <string name="hue_str">Hue: <xliff:g id="hue_value">%1$s</xliff:g></string>
+    <string name="saturation_str">Saturation: <xliff:g id="saturation_value">%1$s</xliff:g></string>
+    <string name="contrast_str">Contrast: <xliff:g id="contrast_value">%1$s</xliff:g></string>
+    <string name="intensity_str">Intensity: <xliff:g id="intensity_str_value">%1$s</xliff:g></string>
+
+    <!-- Font size sample text. This needs to be a very short string, as it is shown in
+         multiple font sizes in a limited amount of space. -->
+    <string name="font_size_sample">Sample</string>
+
+    <!-- LiveDisplay -->
+    <string name="category_calibration">Calibration</string>
+    <string name="settings_reset_button">Reset</string>
+    <string name="live_display_title" translatable="false">LiveDisplay</string>
+    <string name="live_display_summary">Optimize your screen based on time of day and ambient conditions to improve readibility and reduce eyestrain</string>
+    <string name="live_display_mode">Display mode</string>
+    <string name="live_display_color_temperature_title">Color temperature</string>
+    <string name="live_display_color_temperature_summary">Day: <xliff:g id="day_temperature">%1$d</xliff:g>K  Night: <xliff:g id="night_temperature">%2$d</xliff:g>K</string>
+    <string name="live_display_color_temperature_label"><xliff:g id="degrees">%1$d</xliff:g>K</string>
+    <string name="live_display_day">Day</string>
+    <string name="live_display_night">Night</string>
+    <string name="live_display_outdoor_mode_title">Automatic outdoor mode</string>
+    <string name="live_display_outdoor_mode_summary">Increase brightness and saturation automatically under bright sunlight</string>
+    <string name="live_display_low_power_title">Reduce power consumption</string>
+    <string name="live_display_low_power_summary">Adjust display for lowest power consumption without degradation</string>
+    <string name="live_display_enhance_color_title">Enhance colors</string>
+    <string name="live_display_enhance_color_summary">Improve color vibrance of flesh tones, scenery, and other images</string>
+
+    <!-- Hardware buttons - General -->
+    <string name="general_title">General</string>
+    <string name="disable_hwbuttons_title">Disable hardware buttons</string>
+    <string name="disable_hwbuttons_summary">Disable hardware buttons and enable navigation bar</string>
+
+    <!-- Overflow button -->
+    <string name="keys_overflow_title">Overflow button</string>
+    <string name="keys_overflow_toast">The action overflow button may not be visible or hidden until apps are restarted</string>
+    <string name="overflow_auto_detect">Auto detect</string>
+    <string name="overflow_show">Show</string>
+    <string name="overflow_hide">Hide</string>
+
+    <!-- Hardware keys backlight -->
+    <string name="button_backlight_title">Backlight</string>
+    <string name="button_backlight_enabled">Illuminate buttons</string>
+    <string name="keyboard_backlight_enabled">Illuminate keyboard</string>
+    <string name="button_backlight_seekbar_title">Button brightness</string>
+    <string name="keyboard_backlight_seekbar_title">Keyboard brightness</string>
+    <string name="backlight_timeout_title">Illumination timeout</string>
+    <string name="backlight_timeout_unlimited">Don\'t turn off</string>
+    <plurals name="backlight_timeout_time">
+        <item quantity="one"><xliff:g id="seconds">%d</xliff:g> second</item>
+        <item quantity="other"><xliff:g id="seconds">%d</xliff:g> seconds</item>
+    </plurals>
+    <string name="backlight_summary_disabled">Disabled</string>
+    <string name="backlight_summary_enabled_with_timeout">Enabled for <xliff:g id="timeout">%s</xliff:g></string>
+    <string name="backlight_summary_enabled">Enabled</string>
+
+    <!-- Sound & notification > Other sounds: Title for the option enabling sound on volume slide adjust. [CHAR LIMIT=30] -->
+    <string name="volume_adjust_sound_title">Volume slider sound</string>
+
+    <!-- Default alarm ringtone -->
+    <string name="alarm_ringtone_title">Default alarm ringtone</string>
+
+    <!-- Lock screen shortcuts -->
+    <string name="lockscreen_title">Lockscreen</string>
+    <string name="lockscreen_bottom_shortcuts_title">Enable bottom shortcuts</string>
+    <string name="lockscreen_bottom_shortcuts_enabled">Lockscreen phone and camera shortcuts are enabled</string>
+    <string name="lockscreen_bottom_shortcuts_disabled">Lockscreen phone and camera shortcuts are disabled</string>
+
+    <!-- Unaccounted and overcounted battery stats -->
+    <string name="show_unac_and_overcounted_stats_title">Show unaccounted/overcounted stats</string>
+    <string name="show_unac_and_overcounted_stats_summary">Show in battery statistics unaccounted and over-counted usage.</string>
+
+
+    <!-- Weather in status bar -->
+    <string name="status_bar_show_weather_title">Show weather</string>
+    <string name="status_bar_show_weather_summary">Show the weather above the Quick Settings panel</string>
+
+    <string name="usb_not_connected">Usb not connected</string>
+
+    <!-- Zen mode related -->
+    <string name="interruptions_ignore_while_media_title">Prevent audio ducking</string>
+    <string name="interruptions_ignore_while_media_summary">Do not reduce media playback volume when a notification arrives</string>
+    <string name="none_is_silent_title">None is Silent mode</string>
+    <string name="none_is_silent_summary">Silent mode always sounds alarms</string>
+    <string name="allow_lights_title">Allow notification lights</string>
+
+    <!-- Increasing ring tone volume -->
+    <string name="increasing_ring_volume_option_title">Increasing ring volume</string>
+    <string name="increasing_ring_min_volume_title">Start volume</string>
+    <string name="increasing_ring_ramp_up_time_title">Ramp-up time</string>
+
+    <!-- Linked / unlinked notification volume -->
+    <string name="link_volume_option_title">Link ring and notification volumes</string>
+    <string name="notification_volume_option_title">Notification volume</string>
+    <string name="ring_notification_volume_option_tile">Ring and notification volume</string>
+
 </resources>

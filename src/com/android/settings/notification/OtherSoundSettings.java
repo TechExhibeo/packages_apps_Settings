@@ -23,6 +23,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.hardware.CmHardwareManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -62,8 +63,10 @@ public class OtherSoundSettings extends SettingsPreferenceFragment implements In
     private static final String KEY_DOCKING_SOUNDS = "docking_sounds";
     private static final String KEY_TOUCH_SOUNDS = "touch_sounds";
     private static final String KEY_VIBRATE_ON_TOUCH = "vibrate_on_touch";
+    private static final String KEY_VOLUME_ADJUST_SOUND = "volume_adjust_sound";
     private static final String KEY_DOCK_AUDIO_MEDIA = "dock_audio_media";
     private static final String KEY_EMERGENCY_TONE = "emergency_tone";
+    private static final String KEY_VIBRATION_INTENSITY = "vibration_intensity";
 
     private static final SettingPref PREF_DIAL_PAD_TONES = new SettingPref(
             TYPE_SYSTEM, KEY_DIAL_PAD_TONES, System.DTMF_TONE_WHEN_DIALING, DEFAULT_ON) {
@@ -103,6 +106,24 @@ public class OtherSoundSettings extends SettingsPreferenceFragment implements In
         @Override
         public boolean isApplicable(Context context) {
             return hasHaptic(context);
+        }
+    };
+
+    private static final SettingPref PREF_VIBRATION_INTENSITY = new SettingPref(
+            TYPE_SYSTEM, KEY_VIBRATION_INTENSITY, System.HAPTIC_FEEDBACK_ENABLED, DEFAULT_ON) {
+        @Override
+        public boolean isApplicable(Context context) {
+            CmHardwareManager cmHardwareManager =
+                    (CmHardwareManager) context.getSystemService(Context.CMHW_SERVICE);
+            return cmHardwareManager.isSupported(CmHardwareManager.FEATURE_VIBRATOR);
+        }
+    };
+
+    private static final SettingPref PREF_VOLUME_ADJUST_SOUND = new SettingPref(
+            TYPE_SYSTEM, KEY_VOLUME_ADJUST_SOUND, System.VOLUME_ADJUST_SOUND_ENABLED, DEFAULT_ON) {
+        @Override
+        protected boolean setSetting(Context context, int value) {
+            return super.setSetting(context, value);
         }
     };
 
@@ -157,8 +178,10 @@ public class OtherSoundSettings extends SettingsPreferenceFragment implements In
         PREF_DOCKING_SOUNDS,
         PREF_TOUCH_SOUNDS,
         PREF_VIBRATE_ON_TOUCH,
+        PREF_VOLUME_ADJUST_SOUND,
         PREF_DOCK_AUDIO_MEDIA,
         PREF_EMERGENCY_TONE,
+        PREF_VIBRATION_INTENSITY,
     };
 
     private final SettingsObserver mSettingsObserver = new SettingsObserver();

@@ -837,4 +837,29 @@
         <item>2</item>
     </string-array>
 
+    <!-- Gamma calibration descriptors, deliberately empty as string values populated via
+         per-device overlay. Required to build on non-hardware tunable devices -->
+    <string-array name="gamma_descriptors" translatable="false">
+    </string-array>
+
+    <!-- Values for screen color  -->
+    <string-array name="screen_color_setting">
+        <item>Standard</item>
+        <item>Vivid</item>
+        <item>Custom</item>
+    </string-array>
+
+    <!-- Overflow button -->
+    <string-array name="overflow_button_entries" translatable="false">
+        <item>@string/overflow_auto_detect</item>
+        <item>@string/overflow_hide</item>
+        <item>@string/overflow_show</item>
+    </string-array>
+
+    <string-array name="overflow_button_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
 </resources>

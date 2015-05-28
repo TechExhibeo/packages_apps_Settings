@@ -33,6 +33,13 @@
                 android:summary="@string/auto_brightness_summary"
                 android:persistent="false" />
 
+        <!-- LiveDisplay -->
+        <PreferenceScreen
+                android:key="live_display"
+                android:title="@string/live_display_title"
+                android:summary="@string/live_display_summary"
+                android:fragment="com.android.settings.livedisplay.LiveDisplay" />
+
         <PreferenceScreen
                 android:key="wallpaper"
                 android:title="@string/wallpaper_settings_title"
@@ -62,13 +69,11 @@
                 android:title="@string/lift_to_wake_title"
                 android:persistent="false" />
 
-        <com.android.settings.WarnedListPreference
+        <com.android.settings.FontDialogPreference
                 android:key="font_size"
                 android:title="@string/title_font_size"
                 settings:keywords="@string/keywords_display_font_size"
                 android:summary="@string/summary_font_size"
-                android:entries="@array/entries_font_size"
-                android:entryValues="@array/entryvalues_font_size"
                 android:dialogTitle="@string/dialog_title_font_size" />
 
         <PreferenceScreen
@@ -81,16 +86,6 @@
                 android:title="@string/wifi_display_settings_title"
                 settings:keywords="@string/keywords_display_cast_screen"
                 android:fragment="com.android.settings.wfd.WifiDisplaySettings" />
-
-        <!-- DeviceHandler device specific screen off gesture settings -->
-        <Preference
-                android:key="screen_off_gesture_settings"
-                android:title="@string/screen_off_gesture_settings_title">
-                <intent
-                    android:action="com.slim.action.LAUNCH_SCREEN_OFF_GESTURE_SETTINGS"
-                    android:targetPackage="com.slim.device"
-                    android:targetClass="com.slim.device.settings.ScreenOffGestureSettings" />
-        </Preference>
 
          <PreferenceCategory
              android:key="category_wakeup_options"
@@ -135,4 +130,5 @@
                 android:dependency="doze" />
 
          </PreferenceCategory>
+
 </PreferenceScreen>

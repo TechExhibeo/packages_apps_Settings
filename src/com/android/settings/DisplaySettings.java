@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2014 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +38,9 @@ import android.app.ProgressDialog;
 import android.app.admin.DevicePolicyManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.hardware.Sensor;
@@ -51,6 +55,7 @@ import android.os.ServiceManager;
 import android.os.SystemProperties;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
@@ -85,7 +90,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private static final String KEY_WAKEUP_CATEGORY = "category_wakeup_options";
     private static final String KEY_VOLUME_WAKE = "pref_volume_wake";
     private static final String KEY_PROXIMITY_WAKE = "proximity_on_wake";
-    private static final String KEY_SCREEN_OFF_GESTURE_SETTINGS = "screen_off_gesture_settings";
+    private static final String KEY_SCREEN_COLOR_SETTINGS = "screencolor_settings";
 
     private static final int DLG_GLOBAL_CHANGE_WARNING = 1;
 
@@ -94,11 +99,12 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private static final String ROTATION_ANGLE_180 = "180";
     private static final String ROTATION_ANGLE_270 = "270";
 
-
     private PreferenceScreen mDisplayRotationPreference;
-    private WarnedListPreference mFontSizePref;
+    private FontDialogPreference mFontSizePref;
+
     private SwitchPreference mWakeUpWhenPluggedOrUnplugged;
     private PreferenceCategory mWakeUpOptions;
+    private PreferenceScreen mScreenColorSettings;
 
     private static final String KEY_DOZE_CATEGORY = "category_doze_options";
     private static final String KEY_DOZE = "doze";
@@ -122,7 +128,6 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
 
     private PreferenceCategory mDozeCategory;
     private SwitchPreference mDozePreference;
-    private PreferenceScreen mAdvancedDozeOptions;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -158,12 +163,12 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
                 currentDensity = defaultDensity;
             }
 
-            int factor = defaultDensity >= 480 ? 40 : 20;
-            int minimumDensity = defaultDensity - 4 * factor;
+            int factor = defaultDensity >= 480 ? 20 : 10;
+            int minimumDensity = defaultDensity - 6 * factor;
             int currentIndex = -1;
-            String[] densityEntries = new String[7];
-            String[] densityValues = new String[7];
-            for (int idx = 0; idx < 7; ++idx) {
+            String[] densityEntries = new String[13];
+            String[] densityValues = new String[13];
+            for (int idx = 0; idx < 13; ++idx) {
                 int val = minimumDensity + factor * idx;
                 int valueFormatResId = val == defaultDensity
                         ? R.string.lcd_density_default_value_format
@@ -184,7 +189,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
             updateLcdDensityPreferenceDescription(currentDensity);
         }
 
-        mFontSizePref = (WarnedListPreference) findPreference(KEY_FONT_SIZE);
+        mFontSizePref = (FontDialogPreference) findPreference(KEY_FONT_SIZE);
         mFontSizePref.setOnPreferenceChangeListener(this);
         mFontSizePref.setOnPreferenceClickListener(this);
 
@@ -203,6 +208,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         }
 
         mDozeCategory = (PreferenceCategory) findPreference(KEY_DOZE_CATEGORY);
+
         if (isDozeAvailable(activity)) {
             // Doze master switch
             mDozePreference = (SwitchPreference) findPreference(KEY_DOZE);
@@ -216,7 +222,6 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         } else {
             removePreference(KEY_DISPLAY_ROTATION);
         }
-
 
         mWakeUpOptions = (PreferenceCategory) prefSet.findPreference(KEY_WAKEUP_CATEGORY);
         int counter = 0;
@@ -256,10 +261,6 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         if (counter == 3) {
             prefSet.removePreference(mWakeUpOptions);
         }
-
-        Utils.updatePreferenceToSpecificActivityFromMetaDataOrRemove(getActivity(),
-                getPreferenceScreen(), KEY_SCREEN_OFF_GESTURE_SETTINGS);
-
     }
 
     private static boolean allowAllRotations(Context context) {
@@ -401,37 +402,6 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         screenTimeoutPreference.setEnabled(revisedEntries.size() > 0);
     }
 
-    int floatToIndex(float val) {
-        String[] indices = getResources().getStringArray(R.array.entryvalues_font_size);
-        float lastVal = Float.parseFloat(indices[0]);
-        for (int i=1; i<indices.length; i++) {
-            float thisVal = Float.parseFloat(indices[i]);
-            if (val < (lastVal + (thisVal-lastVal)*.5f)) {
-                return i-1;
-            }
-            lastVal = thisVal;
-        }
-        return indices.length-1;
-    }
-
-    public void readFontSizePreference(ListPreference pref) {
-        try {
-            mCurConfig.updateFrom(ActivityManagerNative.getDefault().getConfiguration());
-        } catch (RemoteException e) {
-            Log.w(TAG, "Unable to retrieve font size");
-        }
-
-        // mark the appropriate item in the preferences list
-        int index = floatToIndex(mCurConfig.fontScale);
-        pref.setValueIndex(index);
-
-        // report the current size in the summary text
-        final Resources res = getResources();
-        String[] fontSizeNames = res.getStringArray(R.array.entries_font_size);
-        pref.setSummary(String.format(res.getString(R.string.summary_font_size),
-                fontSizeNames[index]));
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -533,6 +503,22 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         task.execute();
     }
 
+    /**
+     * Reads the current font size and sets the value in the summary text
+     */
+    public void readFontSizePreference(Preference pref) {
+        try {
+            mCurConfig.updateFrom(ActivityManagerNative.getDefault().getConfiguration());
+        } catch (RemoteException e) {
+            Log.w(TAG, "Unable to retrieve font size");
+        }
+
+        // report the current size in the summary text
+        final Resources res = getResources();
+        String fontDesc = FontDialogPreference.getFontSizeDescription(res, mCurConfig.fontScale);
+        pref.setSummary(getString(R.string.summary_font_size, fontDesc));
+    }
+
     public void writeFontSizePreference(Object objValue) {
         try {
             mCurConfig.fontScale = Float.parseFloat(objValue.toString());
@@ -609,6 +595,17 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
             }
         }
         return false;
+    }
+
+    private boolean isPostProcessingSupported() {
+        boolean ret = true;
+        final PackageManager pm = getPackageManager();
+        try {
+            pm.getPackageInfo("com.qualcomm.display", PackageManager.GET_META_DATA);
+        } catch (NameNotFoundException e) {
+            ret = false;
+        }
+        return ret;
     }
 
     public static final Indexable.SearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
