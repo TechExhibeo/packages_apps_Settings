@@ -16,7 +16,6 @@
 
 package com.android.settings.slim.service;
 
-import com.android.settings.DisplaySettings;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -32,7 +31,6 @@ public class BootReceiver extends BroadcastReceiver {
         ContentResolver resolver = context.getContentResolver();
 
         /* Restore the hardware tunable values */
-        DisplaySettings.restore(ctx);
         DisplayGamma.restore(context);
         VibratorIntensity.restore(context);
         HardwareKeysSettings.restore(context);
