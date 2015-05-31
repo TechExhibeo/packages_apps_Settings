@@ -34,10 +34,13 @@
         android:fragment="com.android.settings.slim.NavigationSettings"
         android:title="@string/navigation_settings_title" />
 
-    <!-- Screen and animations -->
     <PreferenceScreen
         android:key="screen_and_animations"
         android:fragment="com.android.settings.tesla.ScreenAndAnimations"
         android:title="@string/screen_and_animations_title" />
-   
+
+    <PreferenceScreen
+        android:id="@+id/gesture_anywhere"
+        android:title="@string/gesture_anywhere_title"
+        android:fragment="com.android.settings.tesla.gestureanywhere.GestureAnywhereSettings" />   
 </PreferenceScreen>
