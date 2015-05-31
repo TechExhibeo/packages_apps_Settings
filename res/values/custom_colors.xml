@@ -38,7 +38,4 @@
     <color name="ownerinfo_divider_color">#ff404040</color>
     <!-- Installed app details -->
     <color name="security_settings_billing_desc_color">#ffffb060</color>
-
-    <!-- Gesture Anywhere -->
-    <color name="ga_gesture_color">#FF07998B</color>
 </resources> 

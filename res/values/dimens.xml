@@ -235,6 +235,4 @@
     <dimen name="qs_tile_max_padding">10dp</dimen>
     <dimen name="qs_tile_dragged_z">10dp</dimen>
 
-    <dimen name="ga_gesture_thumbnail_inset">8dip</dimen>
-    <dimen name="ga_gesture_thumbnail_size">64dip</dimen>
 </resources>

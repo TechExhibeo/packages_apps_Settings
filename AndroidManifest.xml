@@ -2189,9 +2189,5 @@
             </intent-filter>
         </provider>
 
-        <!-- Gesture anywhere -->
-        <activity android:name=".tesla.gestureanywhere.GestureAnywhereBuilderActivity" />
-        <activity android:name=".tesla.gestureanywhere.GestureAnywhereCreateGestureActivity" />
-
     </application>
 </manifest>
