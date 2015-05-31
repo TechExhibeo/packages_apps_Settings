@@ -151,4 +151,11 @@
         <attr name="netUnitsLeft" format="string" />
         <attr name="netUnitsRight" format="string" />
     </declare-styleable>
+
+    <!-- SeekBar -->
+    <declare-styleable name="SeekBarPreference">
+        <attr name="interval" format="integer" />
+        <attr name="unitsLeft" format="string" />
+        <attr name="unitsRight" format="string" />
+    </declare-styleable>
 </resources>
